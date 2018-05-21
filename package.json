@@ -16,6 +16,7 @@
     "express": "^4.16.3",
     "express-static": "^1.2.5",
     "express-validator": "^5.2.0",
+    "mail2": "^1.2.2",
     "mime": "^2.3.1",
     "path": "^0.12.7",
     "popper.js": "^1.14.3",
