@@ -1,3 +1,4 @@
+var dotenv = require('dotenv').config();
 var express = require('express')();
 var mongoose = require('mongoose');
 var bodyParser = require('body-parser');
@@ -16,11 +17,11 @@ mongoose.Promise = global.Promise;
 
 
 // Setup mongoose connection
-var mongoURI = 'URI'
+var mongoURI = process.env.MONGO_URI;
 mongoose.connect(mongoURI, {
   auth: {
-    user: 'user',
-    password: 'password'
+    user: process.env.MONGO_USER,
+    password: process.env.MONGO_PASSWORD 
   }});
 mongoose.connection.on('connected', function () {  
   console.log('Mongoose connection open to ' + mongoURI);
