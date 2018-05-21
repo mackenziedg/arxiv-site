@@ -55,14 +55,11 @@ calculate_distances_route = [body("arxiv_id", "Empty url").isLength({min: 1}),
     // Extract the validation errors from a request.
     const errors = validationResult(req);
 
-    console.log(req, res);
     if (!errors.isEmpty()) {
       res.render("index", {errors: errors});
     } else {
 
-      // var comp_url = "http://arxiv.org/abs/1704.07978";
       var comp_url = "http://arxiv.org/abs/"+req.body.arxiv_id;
-      console.log(comp_url);
       wcModel.findOne({arxiv_url: comp_url}, function(err, doc){
         if(doc){
           var comp_wcs = doc.word_counts;
@@ -85,7 +82,7 @@ calculate_distances_route = [body("arxiv_id", "Empty url").isLength({min: 1}),
 ]
 app.post("/", calculate_distances_route);
 
-app.use("/static-bs", serve(__dirname + '/node_modules/bootstrap/dist'));
+// Static import directories
 app.use("/static", serve(__dirname + '/public'));
 
 // Start server
