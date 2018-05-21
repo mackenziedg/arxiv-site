@@ -65,4 +65,5 @@ app.post('/', calculate_distances_route);
 app.use('/static', serve(__dirname + '/public'));
 
 // Start server
-app.listen(3000, () => console.log('Listening on port 3000'));
+var port = process.env.PORT || 8080;
+app.listen(port, () => console.log('Listening on port'+port));
