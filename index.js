@@ -1,11 +1,11 @@
 var dotenv = require('dotenv').config();
 var express = require('express')();
-var mongoose = require('mongoose');
 var bodyParser = require('body-parser');
 var path = require('path');
 var serve = require('express-static');
+var sc = require('skale').context();
+var records = require('./data/2018-05-20.json');
 var app = express;
-var wcModel = require('./models/wc');
 const { body,validationResult } = require('express-validator/check');
 const { sanitizeBody } = require('express-validator/filter');
 
@@ -13,77 +13,46 @@ const { sanitizeBody } = require('express-validator/filter');
 app.set('view engine', 'pug');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-mongoose.Promise = global.Promise;
-
-
-// Setup mongoose connection
-var mongoURI = process.env.MONGO_URI;
-mongoose.connect(mongoURI, {
-  auth: {
-    user: process.env.MONGO_USER,
-    password: process.env.MONGO_PASSWORD 
-  }});
-mongoose.connection.on('connected', function () {  
-  console.log('Mongoose connection open to ' + mongoURI);
-}); 
-mongoose.connection.on('error',function (err) {  
-  console.log('Mongoose default connection error: ' + err);
-}); 
-mongoose.connection.on('disconnected', function () {  
-  console.log('Mongoose default connection disconnected'); 
-});
-
-
-function cosine_similarity(wc1, wc2){
-  shared_keys = Object.keys(wc1).filter({}.hasOwnProperty.bind(wc2));;
-  var s = 0;
-  for(var key in shared_keys){
-    s += wc1[shared_keys[key]]*wc2[shared_keys[key]];
-  }
-
-  return s;
-};
 
 // Routes
 app.get('/', function (req, res){
-  res.render("index");
+  res.render('index');
 });
 
-calculate_distances_route = [body("arxiv_id", "Empty url").isLength({min: 1}),
-  sanitizeBody("arxiv_id").trim().escape(),
+
+calculate_distances_route = [body('arxiv_id', 'Empty url').isLength({min: 1}),
+  sanitizeBody('arxiv_id').trim().escape(),
   (req, res, next) => {
     // Extract the validation errors from a request.
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-      res.render("index", {errors: errors});
+      res.render('index', {errors: errors});
     } else {
+      var comp_url = 'http://arxiv.org/abs/'+req.body.arxiv_id;
+      var comp_doc = records.filter((d) => d.arxiv_url === comp_url)[0];
 
-      var comp_url = "http://arxiv.org/abs/"+req.body.arxiv_id;
-      wcModel.findOne({arxiv_url: comp_url}, function(err, doc){
-        if(doc){
-          var comp_wcs = doc.word_counts;
+      sc.parallelize(records)
+        .map(function(doc, obj){
+          wc1 = doc.word_counts;
+          wc2 = obj.word_counts;
 
-          wcModel.find({})
-            .exec()
-            .then(function(results){
-              for(var i in results){
-                results[i].similarity = cosine_similarity(comp_wcs, results[i].word_counts).toFixed(3);
-              }
-
-              res.render('index', {results: results});
-          });
-        } else {
-          res.render('index', {errors: {array: function(){return [{msg: "Article id not found."}]}}});
-        }
-      });
+          shared_keys = Object.keys(wc1).filter({}.hasOwnProperty.bind(wc2));;
+          doc.similarity = 0;
+          for(var key in shared_keys){
+            doc.similarity += wc1[shared_keys[key]]*wc2[shared_keys[key]];
+          }
+          doc.similarity = doc.similarity.toFixed(3);
+          return doc;
+        }, comp_doc)
+        .collect().then((r) => res.render('index', {results: r}));
+      }
     }
-  }
 ]
-app.post("/", calculate_distances_route);
+app.post('/', calculate_distances_route);
 
 // Static import directories
-app.use("/static", serve(__dirname + '/public'));
+app.use('/static', serve(__dirname + '/public'));
 
 // Start server
 app.listen(3000, () => console.log('Listening on 127.0.0.1:3000'));
