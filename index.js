@@ -18,7 +18,6 @@ app.use(bodyParser.json());
 
 // Routes
 app.get('/', function (req, res){
-
   res.render('index');
 });
 
@@ -67,4 +66,4 @@ app.post('/', calculate_distances_route);
 app.use('/static', serve(__dirname + '/public'));
 
 // Start server
-app.listen(3000, () => console.log('Listening on 127.0.0.1:3000'));
+app.listen(3000, () => console.log('Listening on port 3000'));
