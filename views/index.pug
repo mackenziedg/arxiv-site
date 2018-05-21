@@ -1,0 +1,68 @@
+doctype html
+html
+  head
+    title arXiv Recommender
+    link(rel="stylesheet", type="text/css", href="//cdn.datatables.net/v/bs4-4.0.0/jq-3.2.1/dt-1.10.16/datatables.min.css")
+    script(src="//cdn.datatables.net/v/bs4-4.0.0/jq-3.2.1/dt-1.10.16/datatables.min.js")
+  body
+    .container
+
+      if results
+        script(src="static/js/setupDataTables.js")
+
+        nav.navbar.navbar-expand-lg.navbar-dark.bg-dark.mb-2
+          .navbar-brand
+            arXiv Recommender
+          if results
+            ul.navbar-nav
+              li.navbar-item: a.nav-link(href="/") Back to search
+
+
+        .row
+          .col-md-10.offset-md-1
+            table#results.table.table-hover.dt-responsive
+              thead
+                tr
+                  th Title
+                  th Authors
+                  th Subject(s)
+                  th Similarity
+
+              tbody
+                each val in results
+                  if val.similarity != 1
+                    tr
+                      td
+                        a(href=val.arxiv_url) #{val.title}
+                      td
+                        ul
+                          each author in val.authors
+                            li #{author}
+                      td
+                        ul
+                          each subject in val.subjects
+                            li #{subject}
+                      td
+                        #{val.similarity}
+
+      else
+        .row
+          .col-md-6.offset-md-3
+            h1 arXiv Paper Recommender
+        .row
+          .col-md-4.offset-md-2
+            form(action="/", method="POST")
+              .form-group
+                label(for="arxiv_id") arxiv ID:
+                input(type="text", name="arxiv_id", placeholder="Enter arXiv ID. (eg. 1704.07978)", class="form-control")
+              button(type="submit", name="submit_id", class="btn btn-default") Submit
+          .col-md-4
+            form(action="/", method="POST")
+              .form-group
+                label(for="text_query") Keywords: 
+                input(type="text", name="text_query", placeholder="Enter keywords (eg. high-energy distributed)", class="form-control")
+              button(type="submit", name="submit_text", class="btn btn-default float-right") Submit
+        if errors
+          .row
+            .col-md-4.offset-md-4.text-center
+              h3= errors.array()[0].msg
