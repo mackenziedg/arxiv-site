@@ -40,21 +40,24 @@ calculate_distances_route = [body('arxiv_id', 'Empty url').isLength({min: 1}),
         var records = JSON.parse(data.Body);
         var comp_url = 'http://arxiv.org/abs/'+req.body.arxiv_id;
         var comp_doc = records.filter((d) => d.arxiv_url === comp_url)[0];
-
-        sc.parallelize(records)
-          .map(function(doc, obj){
-            wc1 = doc.word_counts;
-            wc2 = obj.word_counts;
-
-            shared_keys = Object.keys(wc1).filter({}.hasOwnProperty.bind(wc2));;
-            doc.similarity = 0;
-            for(var key in shared_keys){
-              doc.similarity += wc1[shared_keys[key]]*wc2[shared_keys[key]];
-            }
-            doc.similarity = doc.similarity.toFixed(3);
-            return doc;
-          }, comp_doc)
-          .collect().then((r) => res.render('index', {results: r}));
+        if(comp_doc){
+          sc.parallelize(records)
+            .map(function(doc, obj){
+              wc1 = doc.word_counts;
+              wc2 = obj.word_counts;
+  
+              shared_keys = Object.keys(wc1).filter({}.hasOwnProperty.bind(wc2));;
+              doc.similarity = 0;
+              for(var key in shared_keys){
+                doc.similarity += wc1[shared_keys[key]]*wc2[shared_keys[key]];
+              }
+              doc.similarity = doc.similarity.toFixed(3);
+              return doc;
+            }, comp_doc)
+            .collect().then((r) => res.render('index', {results: r}));
+        } else {
+          res.render('index', {errors: {array: function(){return [{msg: "arXiv ID not found."}]}}});
+        }
       });
     }
   }
