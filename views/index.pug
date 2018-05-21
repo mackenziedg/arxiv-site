@@ -13,10 +13,19 @@ html
         nav.navbar.navbar-expand-lg.navbar-dark.bg-dark.mb-2
           .navbar-brand
             arXiv Recommender
-          if results
-            ul.navbar-nav
-              li.navbar-item: a.nav-link(href="/") Back to search
+          ul.navbar-nav
+            li.navbar-item: a.nav-link(href="/") Back to search
 
+        .row.mt-3
+          .col-md-10.offset-md-1
+            h4 You searched for:
+        .row
+          .col-md-10.offset-md-1
+            h5: a(href=comp_doc.arxiv_url) #{comp_doc.title}
+
+        .row.mt-3
+          .col-md-10.offset-md-1
+            h2 Results
 
         .row
           .col-md-10.offset-md-1

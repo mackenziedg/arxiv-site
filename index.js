@@ -40,6 +40,7 @@ calculate_distances_route = [body('arxiv_id', 'Empty url').isLength({min: 1}),
         var records = JSON.parse(data.Body);
         var comp_url = 'http://arxiv.org/abs/'+req.body.arxiv_id;
         var comp_doc = records.filter((d) => d.arxiv_url === comp_url)[0];
+
         if(comp_doc){
           sc.parallelize(records)
             .map(function(doc, obj){
@@ -54,7 +55,9 @@ calculate_distances_route = [body('arxiv_id', 'Empty url').isLength({min: 1}),
               doc.similarity = doc.similarity.toFixed(3);
               return doc;
             }, comp_doc)
-            .collect().then((r) => res.render('index', {results: r}));
+            .sortBy(a => a.similarity, ascending=false)
+            .take(500)
+            .then(r => res.render('index', {results: r, comp_doc: comp_doc}));
         } else {
           res.render('index', {errors: {array: function(){return [{msg: "arXiv ID not found."}]}}});
         }
