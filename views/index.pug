@@ -36,8 +36,13 @@ html
                         a(href=val.arxiv_url) #{val.title}
                       td
                         ul
-                          each author in val.authors
-                            li #{author}
+                          if val.authors.length < 4
+                            each author in val.authors
+                              li #{author}
+                          else
+                            each author in val.authors.slice(0, 4)
+                              li #{author}
+                            li et al.
                       td
                         ul
                           each subject in val.subjects
@@ -46,22 +51,15 @@ html
                         #{val.similarity}
 
       else
-        .row
-          .col-md-6.offset-md-3
+        .row.mt-3
+          .col-md-6.offset-md-3.text-center
             h1 arXiv Paper Recommender
         .row
-          .col-md-4.offset-md-2
-            form(action="/", method="POST")
+          .col-md-6.offset-md-3
+            form.mt-3(action="/", method="POST")
               .form-group
-                label(for="arxiv_id") arxiv ID:
                 input(type="text", name="arxiv_id", placeholder="Enter arXiv ID. (eg. 1704.07978)", class="form-control")
               button(type="submit", name="submit_id", class="btn btn-default") Submit
-          .col-md-4
-            form(action="/", method="POST")
-              .form-group
-                label(for="text_query") Keywords: 
-                input(type="text", name="text_query", placeholder="Enter keywords (eg. high-energy distributed)", class="form-control")
-              button(type="submit", name="submit_text", class="btn btn-default float-right") Submit
         if errors
           .row
             .col-md-4.offset-md-4.text-center
