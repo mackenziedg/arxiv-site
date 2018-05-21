@@ -1,5 +1,5 @@
 {
-  "name": "arXiv Paper Recommender",
+  "name": "arxiv-rec",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
